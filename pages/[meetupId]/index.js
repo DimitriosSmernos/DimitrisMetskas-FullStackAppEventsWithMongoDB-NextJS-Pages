@@ -22,16 +22,60 @@ function MeetupDetails(props) {
     </Fragment>
   );
 }
+// export async function getStaticPaths() {
+//   const client = await MongoClient.connect(
+//     "mongodb+srv://bagelishbdb:xpTjF0gAIVHYhKxm@cluster0.peclj6k.mongodb.net/meetups?appName=Cluster0"
+//   );
+//   const db = client.db();
+//   const meetupsCollection = db.collection("meetups");
+//   const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+//   client.close();
+//   return {
+//     fallback: 'blocking',
+//     paths: meetups.map((meetup) => ({
+//       params: { meetupId: meetup._id.toString() },
+//     })),
+//   };
+// }
+
+// export async function getStaticProps(context) {
+//   const meetupId = context.params.meetupId;
+
+//   const client = await MongoClient.connect(
+//     "mongodb+srv://bagelishbdb:xpTjF0gAIVHYhKxm@cluster0.peclj6k.mongodb.net/meetups?appName=Cluster0"
+//   );
+//   const db = client.db();
+//   const meetupsCollection = db.collection("meetups");
+//   const selectedMeetup = await meetupsCollection.findOne({
+//     _id: new ObjectId(meetupId),
+//   });
+//   client.close();
+
+//   return {
+//     props: {
+//       meetupData: {
+//         id: selectedMeetup._id.toString(),
+//         title: selectedMeetup.title,
+//         address: selectedMeetup.address,
+//         image: selectedMeetup.image,
+//         description: selectedMeetup.description,
+//       },
+//     },
+//     revalidate: 10,
+//   };
+// }
 export async function getStaticPaths() {
-  const client = await MongoClient.connect(
-    "mongodb+srv://bagelishbdb:xpTjF0gAIVHYhKxm@cluster0.peclj6k.mongodb.net/meetups?appName=Cluster0"
-  );
-  const db = client.db();
+  const client = await MongoClient.connect(process.env.MONGODB_URI);
+
+  const db = client.db("meetups");
   const meetupsCollection = db.collection("meetups");
-  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  const meetups = await meetupsCollection.find({}, { projection: { _id: 1 } }).toArray();
+
   client.close();
+
   return {
-    fallback: 'blocking',
+    fallback: "blocking",
     paths: meetups.map((meetup) => ({
       params: { meetupId: meetup._id.toString() },
     })),
@@ -41,14 +85,15 @@ export async function getStaticPaths() {
 export async function getStaticProps(context) {
   const meetupId = context.params.meetupId;
 
-  const client = await MongoClient.connect(
-    "mongodb+srv://bagelishbdb:xpTjF0gAIVHYhKxm@cluster0.peclj6k.mongodb.net/meetups?appName=Cluster0"
-  );
-  const db = client.db();
+  const client = await MongoClient.connect(process.env.MONGODB_URI);
+
+  const db = client.db("meetups");
   const meetupsCollection = db.collection("meetups");
+
   const selectedMeetup = await meetupsCollection.findOne({
     _id: new ObjectId(meetupId),
   });
+
   client.close();
 
   return {
@@ -64,5 +109,4 @@ export async function getStaticProps(context) {
     revalidate: 10,
   };
 }
-
 export default MeetupDetails;
